@@ -1,7 +1,11 @@
 package com.example.hellosensor;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.SensorEventListener;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.hardware.Sensor;
@@ -10,6 +14,7 @@ import android.hardware.SensorManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.os.Bundle;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -20,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // record the angle turned of the compass picture
     private float DegreeStart = 0f;
     TextView DegreeTV;
+    private Button accelerometerButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +38,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         DegreeTV = (TextView) findViewById(R.id.DegreeTV);
         // initialize your android device sensor capabilities
         SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometerButton = findViewById(R.id.button);
+        accelerometerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                accelerometerButtonOnClick(v);
+            }
+        });
+
     }
     @Override
     protected void onPause() {
@@ -50,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         // get angle around the z-axis rotated
         float degree = Math.round(event.values[0]);
+        if(degree>180) degree=degree-360;
         DegreeTV.setText("Heading: " + Float.toString(degree) + " degrees");
+       if(degree<15 && degree>-15) DegreeTV.setTextColor(Color.parseColor("green"));
+       else if(degree <-165 || degree>165) DegreeTV.setTextColor(Color.parseColor("red"));
+       else DegreeTV.setTextColor((Color.parseColor("blue")));
+
         // rotation animation - reverse turn degree degrees
         RotateAnimation ra = new RotateAnimation(
                 DegreeStart,
@@ -64,10 +83,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Start animation of compass image
         compassimage.startAnimation(ra);
         DegreeStart = -degree;
+       // DegreeStart = degree;
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use
+    }
+
+    public void accelerometerButtonOnClick(View view){
+        Intent intent = new Intent(this, AccelerometerActivity.class);
+        startActivity(intent);
     }
 
 }
